@@ -1,0 +1,105 @@
+<div class="breadcrumbs" id="breadcrumbs">
+    <ul class="breadcrumb">
+        <li>
+        <i class="ace-icon fa fa-home home-icon"></i>
+        <a [routerLink]="['/']">Trang chủ</a>
+        </li>
+        <li class="active">Commission</li>
+    </ul>
+    <div class="nav-search">
+        <p class="pull-right no-margin">
+        <a (click)="createModal()" class="btn btn-success btn-xs">
+            <i class="fa fa-plus"></i>&nbsp;Thêm
+        </a>
+        </p>
+    </div>
+    </div>
+    <div *ngIf="isLoading" class="spinner-container">
+    <p-progressSpinner class="spinner"></p-progressSpinner>
+    </div>
+    
+    <div class="row">
+    
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <p-panel header="Tìm kiếm" [style]="{'margin-top': '2px'}" >
+        <form class="form-horizontal" role="form" [formGroup]="formsearch"  (ngSubmit)="search()">
+            <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"> Mã học viên </label>
+            <div class="col-sm-11">
+                <input formControlName="student_cccd"  type="text" placeholder="Ex: 102" />
+            </div>
+            </div>
+            <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"> Tình trạng</label>
+            <div class="col-sm-11">
+                <p-dropdown [options]="lstCommonStatus" formControlName="status" optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+            </div>
+            <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"></label>
+            <div class="col-sm-11">
+                <button (click)="search()" class="btn btn-sm btn-primary">Tìm kiếm</button>
+            </div>
+            </div>
+        </form> 
+        </p-panel>
+        <p-table selectionMode="single" [value]="plans" styleClass="p-datatable-gridlines" [style]="{'margin-top': '2px'}">
+            <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 50px; text-align: center;">STT</th>
+                <th style="width: 14%; text-align: left;">Họ tên</th>
+                <th style=" text-align: left;">Kế hoạch</th>
+                <th style="text-align: left;">Thời gian thực hiện</th>
+                <th style="width: 25%; text-align: left;">Hướng giải quyết</th>
+                <th style="width: 15%; text-align: left;">Trạng thái</th>
+                <th style="width: 10%; text-align: left;">Tác vụ</th>
+            </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item  let-i="rowIndex">
+            <tr>
+                <td style="width: 50px; text-align: center;">{{ i + 1 }}</td>
+                <td>{{ item.studentName }}</td>
+                <td>{{ item.studentDob | date:'dd/MM/yyyy' }}</td>
+                <td>{{ item.studentPhone }}</td>
+                <td>{{ item.studentAddress }}</td>
+                <td>{{ item.studentNote }}</td>
+                <td class="action-col">
+                <div class="btn-group">
+                    <button title="Sửa thông tin" class="btn btn-xs btn-white btn-default"  (click)="openUpdateModal(item)">  
+                    <i class="ace-icon fa fa-pencil"></i>
+                    </button>
+                    <button title="Hồ sơ" class="btn btn-xs btn-white btn-default"  (click)="openRecordModal(item)">  
+                    <i class="ace-icon fa fa-edit"></i>
+                    </button>
+                    <button title="Tư vấn" class="btn btn-xs btn-white btn-default" (click)="openConsultancyModal(item)">
+                    <i class="ace-icon fa fa-phone-square"></i>
+                    </button>
+                    <button title="Lộ trình du học" class="btn btn-xs btn-white btn-default" (click)="openPlanModal(item)">
+                    <i class="ace-icon fa fa-arrows-h"></i>
+                    </button>
+                    <button title="Hợp đồng" class="btn btn-xs btn-white btn-default" (click)="openContractModal(item)">
+                    <i class="ace-icon fa fa-file"></i>
+                    </button>
+                    <button title="Gửi mail" class="btn btn-xs btn-white btn-default" (click)="openMailModal(item)">
+                    <i class="ace-icon fa fa-reply"></i>
+                    </button>
+                    <button title="Gửi SMS" class="btn btn-xs btn-white btn-default" (click)="openSMSModal(item)">
+                    <i class="ace-icon fa fa-comment"></i>
+                    </button>
+                    <button title="Commission" class="btn btn-xs btn-white btn-default" (click)="openCommissionModal(item)">
+                    <i class="ace-icon fa fa-circle"></i>
+                    </button>
+                </div>  
+                </td>
+            </tr>
+            </ng-template>
+        </p-table>
+        <!-- PAGE CONTENT ENDS -->
+    </div>
+    <div class="col-xs-12" style="text-align: right;">
+        <!-- <ngb-pagination [collectionSize]="totalRecords" [pageSize]="pageSize" [(page)]="page" [maxSize]="10" [rotate]="true" (pageChange)="loadPage($event)"></ngb-pagination> -->
+        <p-paginator [rows]="pageSize" [totalRecords]="totalRecords" (onPageChange)="loadPage($event)"></p-paginator>
+    </div>
+    <!-- /.col -->
+    </div>

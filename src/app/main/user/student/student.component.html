@@ -1,0 +1,716 @@
+<div class="breadcrumbs" id="breadcrumbs">
+  <ul class="breadcrumb">
+    <li>
+      <i class="ace-icon fa fa-home home-icon"></i>
+      <a [routerLink]="['/']">Trang chủ</a>
+    </li>
+    <li class="active">Học viên</li>
+  </ul>
+  <div class="nav-search">
+    <p class="pull-right no-margin">
+      <a (click)="createModal()" class="btn btn-success btn-xs">
+        <i class="fa fa-plus"></i>&nbsp;Thêm
+      </a>
+    </p>
+  </div>
+</div>
+<div *ngIf="isLoading" class="spinner-container">
+  <p-progressSpinner class="spinner"></p-progressSpinner>
+</div>
+
+<div *ngIf="isLoadingEmail" class="spinner-container-non-background">
+  <p-progressSpinner class="spinner"></p-progressSpinner>
+</div>
+
+<p-toast [baseZIndex]="5000"></p-toast> 
+
+
+<div class="row">
+
+  <div class="col-xs-12">
+    <!-- PAGE CONTENT BEGINS -->
+    <p-panel header="Tìm kiếm" [style]="{'margin-top': '2px'}" >
+      <form class="form-horizontal" role="form" [formGroup]="formsearch"  (ngSubmit)="search()">
+        <div class="form-group">
+          <label class="col-sm-1 control-label no-padding-right"> Căn cước </label>
+          <div class="col-sm-11">
+            <input formControlName="student_cccd"  type="text" placeholder="Căn cước công dân" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-1 control-label no-padding-right"> Họ tên</label>
+          <div class="col-sm-11">
+            <input formControlName="student_name"  type="text" placeholder="Họ tên" style="width: 100%;" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-1 control-label no-padding-right"></label>
+          <div class="col-sm-11">
+            <button (click)="search()" class="btn btn-sm btn-primary">Tìm kiếm</button>
+          </div>
+        </div>
+      </form> 
+    </p-panel>
+    <p-table selectionMode="single" [value]="users" styleClass="p-datatable-gridlines" [style]="{'margin-top': '2px'}">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 50px; text-align: center;">STT</th>
+            <th style="width: 14%; text-align: left;">Họ tên</th>
+            <th style="text-align: left;">Ngày sinh</th>
+            <th style="text-align: left;">Số điện thoại</th>
+            <th style="width: 15%; text-align: left;">Địa chỉ</th>
+            <th style="width: 20%; text-align: left;">Ghi chú</th>
+            <th style="width: 310px; text-align: center;">Tác vụ</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item  let-i="rowIndex">
+          <tr>
+            <td style="width: 50px; text-align: center;">{{ i + 1 }}</td>
+            <td>{{ item.studentName }}</td>
+            <td>{{ item.studentDob | date:'dd/MM/yyyy' }}</td>
+            <td>{{ item.studentPhone }}</td>
+            <td>{{ item.studentAddress }}</td>
+            <td>{{ item.studentNote }}</td>
+            <td class="action-col">
+              <div class="btn-group">
+                <button title="Sửa thông tin" class="btn btn-xs btn-white btn-default"  (click)="openUpdateModal(item)">  
+                  <i class="ace-icon fa fa-pencil"></i>
+                </button>
+                <button title="Hồ sơ" class="btn btn-xs btn-white btn-default"  (click)="openRecordModal(item)">  
+                  <i class="ace-icon fa fa-edit"></i>
+                </button>
+                <button title="Tư vấn" class="btn btn-xs btn-white btn-default" (click)="openConsultancyModal(item)">
+                  <i class="ace-icon fa fa-phone-square"></i>
+                </button>
+                <button title="Lộ trình du học" class="btn btn-xs btn-white btn-default" (click)="openPlanModal(item)">
+                  <i class="ace-icon fa fa-arrows-h"></i>
+                </button>
+                <button title="Hợp đồng" class="btn btn-xs btn-white btn-default" (click)="openContractModal(item)">
+                  <i class="ace-icon fa fa-file"></i>
+                </button>
+                <button title="Gửi mail" class="btn btn-xs btn-white btn-default" (click)="openMailModal(item)">
+                  <i class="ace-icon fa fa-reply"></i>
+                </button>
+                <button title="Gửi SMS" class="btn btn-xs btn-white btn-default" (click)="openSMSModal(item)">
+                  <i class="ace-icon fa fa-comment"></i>
+                </button>
+                <button title="Commission" class="btn btn-xs btn-white btn-default" (click)="openCommissionModal(item)">
+                  <i class="ace-icon fa fa-circle"></i>
+                </button>
+              </div>  
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    <!-- PAGE CONTENT ENDS -->
+  </div>
+  <div class="col-xs-12" style="text-align: right;">
+    <!-- <ngb-pagination [collectionSize]="totalRecords" [pageSize]="pageSize" [(page)]="page" [maxSize]="10" [rotate]="true" (pageChange)="loadPage($event)"></ngb-pagination> -->
+    <p-paginator [rows]="pageSize" [totalRecords]="totalRecords" (onPageChange)="loadPage($event)"></p-paginator>
+  </div>
+  <!-- /.col -->
+</div>
+<!-- /.row -->
+<!-- ======= CREATE/UPDATE MODAL ======= -->
+<div *ngIf="showUpdateModal" id="createUserModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg full-height-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4  *ngIf="isCreate" class="modal-title">Nhập thông tin học viên</h4>
+          <h4 *ngIf="!isCreate" class="modal-title">Sửa thông tin học viên</h4>
+        </div>
+        <form *ngIf="doneSetupForm" [formGroup]="formdata" (ngSubmit)="onSubmit(formdata.value)" class="form-horizontal utehy-form">
+          <div class="modal-body no-padding">
+            <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> Họ tên(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <input type="text" placeholder="Họ tên" formControlName="Name"/>
+                <div *ngIf="submitted && f.Name.errors" class="invalid-feedback">
+                  <div *ngIf="f.Name.errors.required">Họ tên là bắt buộc</div>
+                </div>
+              </div>
+              <label class="col-sm-2 control-label no-padding-right"> Ngày sinh(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <p-calendar formControlName="DoB" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+                <div *ngIf="submitted && f.DoB.errors" class="invalid-feedback">
+                  <div *ngIf="f.DoB.errors.required">Ngày sinh là bắt buộc</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> SĐT(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <input type="text" formControlName="Phone" placeholder="Số điện thoại" />
+              </div>
+              <label class="col-sm-2 control-label no-padding-right"> CCCD(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <input type="text" formControlName="CCCD" placeholder="Căn cước công dân" />
+                <!-- <div *ngIf="submitted && f.cccd.errors" class="invalid-feedback">
+                  <div *ngIf="f.cccd.errors.required">Giới tính là bắt buộc</div>
+                </div> -->
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> Nguồn giới thiệu</label>
+              <div class="col-sm-10">
+                <input type="text" formControlName="Source" placeholder="Ex: Quảng cáo" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> Địa chỉ</label>
+              <div class="col-sm-10">
+                <input type="text" formControlName="Address" placeholder="Địa chỉ" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> Ghi chú</label>
+              <div class="col-sm-10">
+                <input type="text" formControlName="Note" placeholder="Ghi chú" />
+              </div>
+            </div>
+            <!-- <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> Ảnh đại diện</label>
+              <div class="col-sm-10">
+                <p-fileUpload #file_image mode="advanced" [showUploadButton]="false" cancelLabel="Hủy" chooseLabel ="Chọn ảnh"   multiple="false" accept="image/*" maxFileSize="1000000">
+                    <ng-template pTemplate="content">
+                        <img *ngIf="user && user.image_url" style="height: 100px;width: 100px;" [src]="user.image_url">
+                    </ng-template>
+              </p-fileUpload>
+             
+              </div>
+            </div> -->
+            <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> Tài khoản(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <input *ngIf="isCreate" type="text" disabled formControlName="Username" placeholder="Tài khoản" />
+                <input *ngIf="!isCreate" type="text" formControlName="Username" placeholder="Tài khoản" />
+                <div *ngIf="submitted && f.Username.errors" class="invalid-feedback">
+                  <div *ngIf="f.Username.errors.required">Tài khoản là bắt buộc</div>
+                </div>
+              </div>
+              <label class="col-sm-2 control-label no-padding-right"> Loại quyền(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <!-- <p-dropdown [options]="roles" formControlName="role" [style]="{'width':'100%'}"></p-dropdown> -->
+                <input type="text" formControlName="Role" disabled placeholder="Tài khoản"/>
+
+                <div *ngIf="submitted && f.Role.errors" class="invalid-feedback">
+                  <div *ngIf="f.Role.errors.required">Loại quyền là bắt buộc</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label no-padding-right"> Mật khẩu(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <input *ngIf="isCreate" type="password" disabled formControlName="Password" placeholder="Mật khẩu" />
+                <input *ngIf="!isCreate" type="password" formControlName="Password" placeholder="Mật khẩu" />
+                <div *ngIf="submitted && f.Password.errors" class="invalid-feedback">
+                  <div *ngIf="f.Password.errors.required">Mật khẩu là bắt buộc</div>
+                  <div *ngIf="f.Password.errors.Password">Độ dài mật khẩu tối thiệu phải là 6 ký tự và phải chứa ký tự đặc biệt @#!$%&*</div>
+              </div>
+              </div>
+              <label class="col-sm-2 control-label no-padding-right"> Nhập lại mật khẩu(<span style="color: red;">*</span>)</label>
+              <div class="col-sm-4">
+                <input *ngIf="isCreate" type="password" disabled formControlName="nhaplaimatkhau" placeholder="Nhập lại mật khẩu" />
+                <input *ngIf="!isCreate" type="password" formControlName="nhaplaimatkhau" placeholder="Nhập lại mật khẩu" />
+                <div *ngIf="submitted && f.nhaplaimatkhau.errors" class="invalid-feedback">
+                  <div *ngIf="f.nhaplaimatkhau.errors.required">Xác nhận lại mật khẩu là bắt buộc</div>
+                  <div *ngIf="f.nhaplaimatkhau.errors.mustMatch">Xác thực lại mật khẩu không đúng</div>
+              </div>
+              </div>
+            </div> 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default btn-sm" (click)="Reset()">
+            <i class="fa fa-bell"></i> Làm mới
+          </button>
+          <button type="submit" class="btn btn-success btn-sm btn-submit">
+            <i class="fa fa-save"></i> Đồng ý
+          </button>
+          <button type="button" class="btn btn-default btn-sm" (click)="closeModal('createUserModal')">
+            <i class="fa fa-times"></i> Đóng lại
+          </button>
+        </div>
+      </form>  
+      </div>
+    </div>
+  </div>
+
+<!-- ======= CREATE/UPDATE MODAL ======= -->
+
+<!-- ======= RECORD MODAL ======= -->
+
+<div *ngIf="showRecordModal" id="recordModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg full-height-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 *ngIf="isCreate" class="modal-title">Tạo hồ sơ</h4>
+        <h4 *ngIf="!isCreate" class="modal-title">Sửa thông tin hồ sơ</h4>
+      </div>
+      <form *ngIf="doneSetupForm" [formGroup]="formdataRecord" (ngSubmit)="onSubmitRecord(formdataRecord.value)" class="form-horizontal utehy-form">
+        <div class="modal-body no-padding">
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Học sinh(<span style="color: red;">*</span>)</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Họ tên" formControlName="name"/>
+              <!-- <div *ngIf="submitted && f.hoten.errors" class="invalid-feedback">
+                <div *ngIf="f.hoten.errors.required">Họ tên là bắt buộc</div>
+              </div> -->
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Tình trạng(<span style="color: red;">*</span>)</label>
+            <div class="col-sm-4">
+              <p-dropdown [options]="lstRecordStatus" formControlName="status" [placeholder]="status"  optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Trường(<span style="color: red;">*</span>)</label>
+            <div class="col-sm-4">
+              <input type="text" formControlName="school" placeholder="Trường" />
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Ngày nhập học</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="admissionDate" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+            <label class="col-sm-2 control-label no-padding-right"> Ngành học</label>
+            <div class="col-sm-4">
+              <input type="text" formControlName="major" placeholder="Địa chỉ" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            
+            <label class="col-sm-2 control-label no-padding-right"> Ngày nộp hồ sơ</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="submitDate" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+            
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Khóa học</label>
+            <div class="col-sm-4">
+              <p-dropdown [options]="lstCourse" formControlName="course" optionLabel="name" [placeholder]="course" optionValue="courseId" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Ngày đăng ký</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="registerDate" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Email: </label>
+            <div class="col-sm-4">
+              <input type="text" formControlName="emailP" placeholder="Địa chỉ" />
+            </div>
+            
+            <label class="col-sm-2 control-label no-padding-right"> Ngày liên hệ gần nhất</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="lastContact" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Email dự phòng: </label>
+            <div class="col-sm-4">
+              <input type="text" formControlName="emailF" placeholder="Địa chỉ" />
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Ngày liên hệ tiếp theo</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="nextContact" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+            
+          </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-sm" (click)="Reset()">
+          <i class="fa fa-bell"></i> Làm mới
+        </button>
+        <button type="submit" class="btn btn-success btn-sm btn-submit">
+          <i class="fa fa-save"></i> Đồng ý
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="closeModal('recordModal')">
+          <i class="fa fa-times"></i> Đóng lại
+        </button>
+      </div>
+    </form>  
+    </div>
+  </div>
+</div>
+<!-- ======= RECORD MODAL ======= -->
+
+<!-- ======= CONSULTANCY MODAL ======= -->
+
+<div *ngIf="showConsultancyModal" id="consultancyModal" class="modal fade" role="dialog"> 
+  <div class="modal-dialog modal-lg full-height-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 *ngIf="isCreate" class="modal-title">Tạo tư vấn</h4>
+        <h4 *ngIf="!isCreate" class="modal-title">Sửa thông tin tư vấn</h4>
+      </div>
+      <form *ngIf="doneSetupForm" [formGroup]="formdataConsultancy" (ngSubmit)="onSubmit(formdataConsultancy.value)" class="form-horizontal utehy-form">
+        <div class="modal-body no-padding">
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Học sinh</label>
+            <div class="col-sm-4">
+              <input type="text" disabled placeholder="Ex: Họ tên" formControlName="name"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> SĐT</label>
+            <div class="col-sm-4">
+              <input type="text" disabled placeholder="Ex: SĐT" formControlName="phone"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Email</label>
+            <div class="col-sm-4">
+              <input type="text" disabled placeholder="Ex: Email" formControlName="email"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Trạng thái</label>
+            <div class="col-sm-4">
+              <p-dropdown [options]="lstCommonStatus" formControlName="status" [placeholder]="status" optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+          </div>
+
+          
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Ngày liên hệ gần nhất</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="lastContact" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Ngày liên hệ tiếp theo</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="nextContact" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Nội dung</label>
+            <div class="col-sm-10">
+              <input type="text" placeholder="Nội dung" formControlName="content"/>
+            </div>
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success btn-sm btn-submit">
+          <i class="fa fa-save"></i> Đồng ý
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="closeModal('consultancyModal')">
+          <i class="fa fa-times"></i> Đóng lại
+        </button>
+      </div>
+    </form>  
+    </div>
+  </div>
+</div>
+<!-- ======= CONSULTANCY MODAL ======= -->
+
+
+<!-- ======= PLAN MODAL ======= -->
+
+<div *ngIf="showPlanModal" id="planModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg full-height-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 *ngIf="isCreate" class="modal-title">Tạo kế hoạch du học</h4>
+        <h4 *ngIf="!isCreate" class="modal-title">Sửa thông tin kế hoạch du học</h4>
+      </div>
+      <form *ngIf="doneSetupForm" [formGroup]="formdataPlan" (ngSubmit)="onSubmit(formdataPlan.value)" class="form-horizontal utehy-form">
+        <div class="modal-body no-padding">
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Học sinh</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Họ tên" formControlName="name"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Thời gian thực hiện</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="eDate" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Kế hoạch</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Ex: Học tiếng Nhật" formControlName="plan"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Trạng thái</label>
+            <div class="col-sm-4">
+              <p-dropdown [options]="lstCommonStatus" formControlName="status" [placeholder]="status" optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Hướng xử lý</label>
+            <div class="col-sm-10">
+              <input type="text" placeholder="Ex: Đăng ký khóa tiếng Hàn 01" formControlName="resolve"/>
+            </div>
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success btn-sm btn-submit">
+          <i class="fa fa-save"></i> Đồng ý
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="closeModal('planModal')">
+          <i class="fa fa-times"></i> Đóng lại
+        </button>
+      </div>
+    </form>  
+    </div>
+  </div>
+</div>
+<!-- ======= PLAN MODAL ======= -->
+
+<!-- ======= CONTRACT MODAL ======= -->
+
+<div *ngIf="showContractModal" id="contractModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg full-height-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 *ngIf="isCreate" class="modal-title">Tạo hợp đồng</h4>
+        <h4 *ngIf="!isCreate" class="modal-title">Sửa thông tin hợp đồng</h4>
+      </div>
+      <form *ngIf="doneSetupForm" [formGroup]="formdataContract" (ngSubmit)="onSubmit(formdataContract.value)" class="form-horizontal utehy-form">
+        <div class="modal-body no-padding">
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Số HĐ</label>
+            <div class="col-sm-4">
+              <input type="text" disabled placeholder="Họ tên" formControlName="contractId"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Học sinh</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Họ tên" formControlName="name"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Giá trị hợp đồng</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Ex: 10000000" formControlName="total"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Thanh toán</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Ex: 10000000" formControlName="amountPaid"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Còn lại</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Ex: 1000000" formControlName="restPaid"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Ngày ký</label>
+            <div class="col-sm-4">
+              <p-calendar formControlName="createdAt" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+
+          <!-- <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Minh chứng</label>
+            <div class="col-sm-10">
+              <input type="file"  formControlName="image"/>
+            </div>
+          </div> -->
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Minh chứng</label>
+            <div class="col-sm-10">
+              <p-fileUpload name="demo[]" url="./upload.php" (onUpload)="onUpload($event)"
+                      multiple="multiple" accept="image/*" maxFileSize="1000000">
+                      <ng-template pTemplate="content">
+                          <ul *ngIf="uploadedFiles.length">
+                              <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
+                          </ul>
+                      </ng-template>
+              </p-fileUpload>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Ghi chú</label>
+            <div class="col-sm-10">
+              <input type="text" placeholder="Ex: Ghi chú" formControlName="note"/>
+            </div>
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success btn-sm btn-submit">
+          <i class="fa fa-save"></i> Đồng ý
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="closeModal('contractModal')">
+          <i class="fa fa-times"></i> Đóng lại
+        </button>
+      </div>
+    </form>  
+    </div>
+  </div>
+</div>
+<!-- ======= CONTRACT MODAL ======= -->
+
+<!-- ======= MAIL MODAL ======= -->
+
+<div *ngIf="showMailModal" id="mailModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg full-height-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Gửi mail</h4>
+      </div>
+      <form *ngIf="doneSetupForm" [formGroup]="formdataMail" (ngSubmit)="onSubmit(formdataMail.value)" class="form-horizontal utehy-form" >
+        <div class="modal-body no-padding">
+          <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"> To:</label>
+            <div class="col-sm-11">
+              <input type="text" placeholder="Ex: Email" formControlName="toMail" disabled/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"> Subject:</label>
+            <div class="col-sm-11">
+              <input type="text" placeholder="Ex: Chủ đề" formControlName="subject"/>
+            </div>
+          </div>
+
+          
+
+          <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"> Nội dung:</label>
+            <div class="col-sm-11">
+              <p-editor  [style]="{'height':'320px'}" formControlName="body"></p-editor>
+              
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"> Tệp:</label>
+            <div class="col-sm-11">
+              <p-fileUpload name="demo[]" url="./upload.php" (onUpload)="onUpload($event)"
+                      multiple="multiple" accept="image/*" maxFileSize="1000000">
+                      <ng-template pTemplate="content">
+                          <ul *ngIf="uploadedFiles.length">
+                              <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
+                          </ul>
+                      </ng-template>
+              </p-fileUpload>
+            </div>
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success btn-sm btn-submit">
+          <i class="fa fa-save"></i> Gửi
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="closeModal('mailModal')">
+          <i class="fa fa-times"></i> Đóng lại
+        </button>
+      </div>
+    </form>  
+    </div>
+  </div>
+</div>
+<!-- ======= MAIL MODAL ======= -->
+
+<!-- ======= SMS MODAL ======= -->
+
+<div *ngIf="showSMSModal" id="smsModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg full-height-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Gửi tin nhắn</h4>
+      </div>
+      <form *ngIf="doneSetupForm" [formGroup]="formdataSMS" (ngSubmit)="onSubmit(formdataSMS.value)" class="form-horizontal utehy-form">
+        <div class="modal-body no-padding">
+
+          <div class="form-group">
+            <label class="col-sm-1 control-label no-padding-right"> Nội dung</label>
+            <div class="col-sm-11">
+              <textarea type="text" placeholder="Ex: Ghi chú" formControlName="name" rows="4" cols="100"></textarea>
+            </div>
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success btn-sm btn-submit">
+          <i class="fa fa-send"></i> Gửi
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="closeModal('smsModal')">
+          <i class="fa fa-times"></i> Đóng lại
+        </button>
+      </div>
+    </form>  
+    </div>
+  </div>
+</div>
+<!-- ======= SMS MODAL ======= -->
+
+<!-- ======= COMMISSION MODAL ======= -->
+
+<div *ngIf="showCommissionModal" id="commissionModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg full-height-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 *ngIf="isCreate" class="modal-title">Tạo hóa đơn</h4>
+        <h4 *ngIf="!isCreate" class="modal-title">Sửa thông tin hóa đơn</h4>
+      </div>
+      <form *ngIf="doneSetupForm" [formGroup]="formdataCommission" (ngSubmit)="onSubmit(formdataCommission.value)" class="form-horizontal utehy-form">
+        <div class="modal-body no-padding">
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Học sinh</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Họ tên" formControlName="name"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> SĐT</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Họ tên" formControlName="name"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Email</label>
+            <div class="col-sm-4">
+              <input type="text" placeholder="Họ tên" formControlName="name"/>
+            </div>
+            <label class="col-sm-2 control-label no-padding-right"> Trạng thái</label>
+            <div class="col-sm-4">
+              <p-dropdown [options]="lstRecordStatus" formControlName="status" optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+          </div>
+
+          
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Nhân viên TV</label>
+            <div class="col-sm-4">
+              <p-dropdown [options]="lstRecordStatus" formControlName="status" optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>
+            </div>
+            <label class="col-sm-3 control-label no-padding-right"> Ngày liên hệ gần nhất</label>
+            <div class="col-sm-3">
+              <p-calendar formControlName="submitDate" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="col-sm-6"></div>
+            <label class="col-sm-3 control-label no-padding-right"> Ngày liên hệ tiếp theo</label>
+            <div class="col-sm-3">
+              <p-calendar formControlName="submitDate" [dateFormat]="dateFormat"  [locale]="locale_vn" [showIcon]="true" inputId="icon"></p-calendar>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label no-padding-right"> Nội dung</label>
+            <div class="col-sm-10">
+              <input type="text" placeholder="Họ tên" formControlName="name"/>
+            </div>
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success btn-sm btn-submit">
+          <i class="fa fa-save"></i> Đồng ý
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="closeModal('commissionModal')">
+          <i class="fa fa-times"></i> Đóng lại
+        </button>
+      </div>
+    </form>  
+    </div>
+  </div>
+</div>
+
+
+<!-- ======= COMMISSION MODAL ======= -->

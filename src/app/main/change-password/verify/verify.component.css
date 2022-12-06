@@ -1,0 +1,27 @@
+.login-container,.widget-body {
+    /* background-color: #ccc; */
+    
+}
+
+.fullName {
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid #ccc;
+    width: 50%;
+    margin: 0 auto;
+}
+
+.login-container {
+    transform: translateY(20%);
+    padding: 24px 12px;
+    border-radius: 16px;
+    border: 1px solid #ccc;
+    height: 500px;
+}
+
+.lbl {
+    margin-top: 8px;
+     display: flex;
+    cursor: pointer;
+    text-decoration: none;
+}
