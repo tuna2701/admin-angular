@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import {
-  FormGroup,
+  UntypedFormGroup,
   FormControl,
   Validators,
-  FormBuilder,
+  UntypedFormBuilder,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../lib/authentication.service';
@@ -15,13 +15,13 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
-  loginForm: FormGroup;
+  loginForm: UntypedFormGroup;
   loading = false;
   submitted = false;
   returnUrl: string;
   error = '';
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private authenticationService: AuthenticationService

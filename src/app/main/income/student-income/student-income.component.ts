@@ -1,5 +1,5 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { BaseComponent } from 'src/app/lib/base-component';
 declare var $: any;
 @Component({
@@ -22,7 +22,7 @@ export class StudentIncomeComponent extends BaseComponent implements OnInit {
   public totalPay: any;
   public totalEarn: any;
   income: any;
-  constructor(private fb: FormBuilder, injector: Injector) {
+  constructor(private fb: UntypedFormBuilder, injector: Injector) {
     super(injector);
   }
 

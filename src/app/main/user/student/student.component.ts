@@ -1,7 +1,7 @@
 import { MustMatch } from '../../../helpers/must-match.validator';
 import { Component, Injector, OnInit, ViewChild } from '@angular/core';
 import { FileUpload } from 'primeng/fileupload';
-import { FormBuilder, Validators} from '@angular/forms';
+import { UntypedFormBuilder, Validators} from '@angular/forms';
 import { BaseComponent } from '../../../lib/base-component';
 import 'rxjs/add/operator/takeUntil';
 declare var $: any;
@@ -47,7 +47,7 @@ export class UserComponent extends BaseComponent implements OnInit {
   @ViewChild(FileUpload, { static: false }) file_image: FileUpload;
   status: any;
   course: any;
-  constructor(private fb: FormBuilder, injector: Injector) {
+  constructor(private fb: UntypedFormBuilder, injector: Injector) {
     super(injector);
 
   }

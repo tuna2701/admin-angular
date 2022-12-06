@@ -1,5 +1,5 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthenticationService } from 'src/app/lib/authentication.service';
@@ -17,7 +17,7 @@ export class VerifyComponent implements OnInit {
   user: any;
   error: '';
 
-  constructor(private fb: FormBuilder,
+  constructor(private fb: UntypedFormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private authenticationService: AuthenticationService) {

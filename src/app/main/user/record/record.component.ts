@@ -1,5 +1,5 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { BaseComponent } from 'src/app/lib/base-component';
 declare var $:any;
 @Component({
@@ -19,7 +19,7 @@ export class RecordComponent extends BaseComponent implements OnInit {
   public showUpdateModal: boolean;
   public isCreate: boolean;
   public formdata: any;
-  constructor(private fb: FormBuilder, injector: Injector) {
+  constructor(private fb: UntypedFormBuilder, injector: Injector) {
     super(injector);
   }
 
